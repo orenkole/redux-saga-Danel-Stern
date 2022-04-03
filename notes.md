@@ -78,3 +78,69 @@ obj.next().value.then(v => {
 	console.log(obj.next())
 })
 ```
+
+# 22. Yield and promises
+
+- code execution resumes when promise is resolved
+- if primise throws an error, code stops at yield line and doesnt throw and error
+
+# 23. Wrapping generators
+
+- Yielded promise must still be called manually by some code
+- redux saga wraps generators automatically
+- Co.js can wrap generators outside of redux-saga app
+
+Without wrapper:
+
+```
+function* getData() {
+	let data = yield api.call('/cart');
+	return data + 5;
+}
+// wrapper code still needs .then somewhere to capture the response from API and pass it to generator
+
+let gen = getData();
+let promise = gen.next();
+promise.then(data => {
+	let value = get.next(data);
+})
+```
+
+Sagas are wrapped by redux saga, `.then` is never manually called
+
+```
+function* mySaga() {
+	yield delay(500);
+	yield delay(700);
+	console.log('Saga complete');
+}
+```
+
+# 24. Wrapping generators with redux saga and Co
+
+Run generator with redux saga
+Note that promises are resolved automatically
+Second argument in `delay` is returned from promise
+
+```
+var delayGenerator = function* () {
+	let data1 = yield delay(1000, 1);
+	console.info("Step 1");
+	let data2 = yield delay(2000, 2);
+	console.info("Step 2");
+	let data3 = yield delay(3000, 3);
+	console.info("Step 3");
+	return data1 + data2+ data3;
+}
+
+var obj = delayGenerator();
+// call next() manually, without waiting for promise resolve:
+
+obj.next() // Object(value: Promise, done: false);
+Step 1
+obj.next() // Object(value: Promise, done: false);
+Step 2
+obj.next() // Object(value: Promise, done: false);
+Step 3
+obj.next() // Object(value: NaN, done: true);
+```
