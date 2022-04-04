@@ -1,6 +1,8 @@
 https://coursehunter.net/course/redux-saga
 
-# 13. Setting up the application
+# Introduction
+
+## 13. Setting up the application
 
 https://github.com/danielstern/redux-saga-shopping-cart-server
 
@@ -8,11 +10,11 @@ https://github.com/danielstern/redux-saga-shopping-cart-server
 
 frontedn app: https://github.com/danielstern/redux-saga-cart/tree/begin
 
-# 14. Installing and configurening redux-saga
+## 14. Installing and configurening redux-saga
 
 We can have several saga middleware in different parts of our application
 
-# 15. Creating your first saga
+## 15. Creating your first saga
 
 Resume saga execution after delay
 
@@ -21,7 +23,9 @@ import {delay} from "redux-saga";
 yield delay(1000);
 ```
 
-# 18. What is yield?
+# Asynchrous ES6 and yield
+
+## 18. What is yield?
 
 Code meant to be run afte API call resolves must be placed inside callback.
 
@@ -79,12 +83,12 @@ obj.next().value.then(v => {
 })
 ```
 
-# 22. Yield and promises
+## 22. Yield and promises
 
 - code execution resumes when promise is resolved
 - if primise throws an error, code stops at yield line and doesnt throw and error
 
-# 23. Wrapping generators
+## 23. Wrapping generators
 
 - Yielded promise must still be called manually by some code
 - redux saga wraps generators automatically
@@ -116,7 +120,7 @@ function* mySaga() {
 }
 ```
 
-# 24. Wrapping generators with redux saga and Co
+## 24. Wrapping generators with redux saga and Co
 
 Run generator with redux saga
 Note that promises are resolved automatically
@@ -143,4 +147,57 @@ Step 2
 obj.next() // Object(value: Promise, done: false);
 Step 3
 obj.next() // Object(value: NaN, done: true);
+```
+
+`NaN` because we didn't wait for promise to be resolved
+
+Using saga's `run` we'll see console logs, since generator is executing, but we don't see the returned values from `next()`
+
+```
+run(delayGenerator);
+Object{@@redux-saga/TASK: true, ...}
+Step 1
+Step 2
+Step 3
+```
+
+Co works differently
+
+# Redux saga effects
+
+## 27. Introduction to effects
+
+- Thread management
+  call
+  fork
+  spawn
+  apply
+  cancel
+- Action creation
+  put
+- Data seeding
+  select
+- Flow control
+  take
+  takeEvery
+  takeLates
+
+# 28. Take
+
+code pauses when it gets to `take`
+
+```
+let mySaga = function* () {
+	console.info("Saga begins");
+	const state = yield effects.take("SET_STATE");
+	console.info("Got state...", state);
+}
+
+run(mySaga)
+// Saga begins
+// Object{@@redux-saga/TASK: true, ...}
+
+dispatch({type: "SET_STATE", value: 42})
+// Got state... Object{type: "SET_STATE", value: 42}
+// Object {type: "SET_STATE", values: 42}
 ```
