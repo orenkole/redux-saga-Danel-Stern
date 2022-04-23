@@ -182,9 +182,10 @@ Co works differently
   takeEvery
   takeLates
 
-# 28. Take
+## 28. Take
 
-code pauses when it gets to `take`
+Code pauses when it gets to `take`
+Use `take` to verify action is dispatched
 
 ```
 let mySaga = function* () {
@@ -201,3 +202,40 @@ dispatch({type: "SET_STATE", value: 42})
 // Got state... Object{type: "SET_STATE", value: 42}
 // Object {type: "SET_STATE", values: 42}
 ```
+
+## 29. Put
+
+Dispatches action to the rest of the app
+
+```
+let mySaga = function* () {
+	console.info("Saga begins");
+	const state = yield effects.take("SET_STATE");
+	console.info("Got state...", state);
+}
+
+run(mySaga)
+// Saga begins
+// Object{@@redux-saga/TASK: true, ...}
+
+let putSaga = function* () {
+	yield effects.put({type: "SET_STATE", value: 42})
+}
+
+run(putSaga)
+// Got state... Object{type: "SET_STATE", value: 42, @@redux-saga/SAGA_ACTION: true}
+//
+```
+
+## 30. Call
+
+Calls a method
+Related to testing
+
+## 31. Implementing Take, Call and Put in the application
+
+- _currentUserSaga_ waits for -`GET_CURRENT_USER_INFO` action with `take`
+- Current user information only ever needs to be fetched once
+- Update current user status saga to call Redux Cart Server API
+- Use saga to _put_ action containing returned information to the app
+- Trigger reducers and update display components

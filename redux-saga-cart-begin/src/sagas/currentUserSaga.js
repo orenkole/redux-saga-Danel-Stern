@@ -1,8 +1,5 @@
-import {delay} from "redux-saga/effects";
-
+import {take, put, call, apply} from "redux-saga/effects";
+import fetch from "isomorphic-fetch";
 export function* currentUserSaga () {
-	while(true) {
-		yield delay(1000);
-		console.log("User saga loop");
-	}
+	
 }
