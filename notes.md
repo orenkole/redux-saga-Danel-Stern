@@ -252,3 +252,160 @@ export function* currentUserSaga() {
 ```
 
 <img src="./notes_img/31_1.png">
+
+## 32. Fork
+
+- invokes the specified method (like call)
+- can't acces yielded variables
+- caller continues without pausing execution
+- if parent process errors or is canlcelled all forked processes are cancelled
+- _finally_ block of forked method is invoked during cancellation
+
+## 33. Implementing fork in the application
+
+- Create _fetch cart saga_ which gets list of item IDs in teh user's cart
+- Create separate _item details saga_ which forks a proccess for each item ID and requests and fetches those details
+
+_itemDetailsSaga.js_
+
+```javascript
+import { fork, put, take } from "@redux-saga/core/effects";
+import fetch from "isomorphic-fetch";
+
+import { setItemDetails, SET_CART_ITEMS } from "../actions";
+
+export function* loadItemDetails(item) {
+  const { id } = item;
+  const response = yield fetch(`http://localhost:8081/items/${id}`);
+  const data = yield response.json();
+  const info = data[0];
+  yield put(setItemDetails(info));
+}
+
+export function* itemDetailsSaga() {
+  const { items } = yield take(SET_CART_ITEMS);
+
+  yield items.map((item) => {
+    console.log(" --- ITEM 0 --- ", item);
+    return fork(loadItemDetails, item);
+  });
+}
+```
+
+## 34. Takeevery
+
+## 35. Cancel and cancelled
+
+- stops a forked process
+- stopped process will be cut off at most recent yield
+- _finally_ is invoked in forked process
+
+_Cancelled_
+
+- method that retruns _true_ if callee process has been cancelled by caller
+- used in _finally_ block if cancelleation (not error) is the reason of termination
+
+```javascript
+let process = function* () {
+  try {
+    console.log("Process looped");
+    yield delay(500);
+  } finally {
+    const cancelled = yield cancelled();
+    console.log("Cancelled", cancelled);
+  }
+};
+
+let saga = function* () {
+  let forked = yield fork(process);
+  yield delay(5000);
+  yield cancel(forked);
+  console.log("Done");
+};
+```
+
+## 36. Takelatest
+
+- combination of _fork_, _takeEvery_ and _cancel_
+
+<img src="./notes_img/36_1.png">
+
+example:
+
+```javascript
+let process = function* () {
+  let timesLooped = 0;
+  while (true) {
+    console.info(`Looped ${timesLooped++} times`);
+    yield delay(500);
+  }
+};
+
+let saga = function* () {
+  yield takeLatest("START_PROCESS", process);
+};
+
+run(saga);
+
+dispatch({ type: "START_PROCESS" });
+```
+
+<img src="./notes_img/36_2.png">
+
+_itemQuantitySaga.js_
+
+```javascript
+import { takeLatest } from "@redux-saga/core/effects";
+import {
+  decreaseItemQuantity,
+  DECREASE_ITEM_QUANTITY,
+  FETCHED,
+  FETCHING,
+  INCREASE_ITEM_QUANTITY,
+  setItemQuantityFetchStatus,
+} from "../actions";
+import { currentUserSelector } from "../selectors";
+
+export function* handleDecreaseItemQuantity({ id }) {
+  yield put(setItemQuantityFetchStatus(FETCHING));
+  const user = yield select(currentUserSelector);
+  const response = yield call(
+    fetch,
+    `http://localhost:8081/cart/remove/${user.get("id")}/${id}}`
+  );
+  console.info("Get response", response);
+
+  if (response.status !== 200) {
+    yield put(decreaseItemQuantity(id, true));
+    alert(
+      "Sorry, there weren't enought items in stock to complete your request"
+    );
+  }
+
+  yield put(setItemQuantityFetchStatus(FETCHED));
+}
+
+export function* handleIncreaseItemQuantity({ id }) {
+  yield put(setItemQuantityFetchStatus(FETCHING));
+  const user = yield select(currentUserSelector);
+  const response = yield call(
+    fetch,
+    `http://localhost:8081/cart/add/${user.get("id")}/${id}}`
+  );
+  console.info("Get response", response);
+
+  if (response.status !== 200) {
+    yield put(decreaseItemQuantity(id, true));
+    alert("Received non 200 status");
+  }
+
+  yield put(setItemQuantityFetchStatus(FETCHED));
+}
+
+export function* itemQuantitySaga() {
+  yield [
+    takeLatest(DECREASE_ITEM_QUANTITY, handleDecreaseItemQuantity),
+    takeLatest(INCREASE_ITEM_QUANTITY, handleIncreaseItemQuantity),
+  ];
+}
+```
