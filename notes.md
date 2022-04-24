@@ -502,3 +502,30 @@ function* updateSaga() {
 ```
 
 <img src="./noted_img/43_2.png">
+
+## 44. Generic channels
+
+Facilitate communication between sagas
+
+It's implied that every action sent to this channel is of particular type
+
+```javascript
+function* saga() {
+  let chan = yield channel();
+  function* handleRequest() {
+    while (true) {
+      let payload = yield take(chan);
+      console.info("Got payload", payload);
+      yield delay(1000);
+    }
+  }
+  yield fork(handleRequest, chan);
+  yield fork(handleRequest, chan);
+
+  yield put(chan, { payload: 42 });
+  yield put(chan, { payload: 42 });
+  yield put(chan, { payload: 42 });
+}
+```
+
+<img src="./notes_img/44_1.png">
