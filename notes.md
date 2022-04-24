@@ -529,3 +529,45 @@ function* saga() {
 ```
 
 <img src="./notes_img/44_1.png">
+
+## 45. Event channels
+
+In application:
+
+- application uses WebSockets to communicate with customer support API
+- event channel converts socket callback into yieldable promises
+- messages from socket are handled in while-loop, state is updated
+
+## 45. Event channels
+
+_customerServicesAvailabilitySaga.js_
+
+```javascript
+import { put, take } from "@redux-saga/core/effects";
+import { eventChannel } from "redux-saga";
+import { setCustomerServiceAvailability } from "../actions";
+import { connect } from "../createSocketConnection";
+
+export function* customerServicesAvailabilitySaga() {
+  const socket = connect();
+  const chan = new eventChannel((emit) => {
+    const enableSupportMessage = () => {
+      emit(true);
+    };
+
+    const disableSupportMessage = () => {
+      emit(false);
+    };
+
+    socket.on("SUPPORT_AVAILABLE", enableSupportMessage);
+    socket.on("SUPPORT_NOT_AVAILABLE", disableSupportMessage);
+
+    return () => {};
+  });
+
+  while (true) {
+    let supportAvailable = yield take(chan);
+    yield put(setCustomerServiceAvailability(supportAvailable));
+  }
+}
+```
