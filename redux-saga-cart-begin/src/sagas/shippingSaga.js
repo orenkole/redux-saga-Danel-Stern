@@ -1,3 +1,4 @@
+import { put, select, takeLatest } from "@redux-saga/core/effects";
 import {
   DECREASE_ITEM_QUANTITY,
   INCREASE_ITEM_QUANTITY,
@@ -28,7 +29,7 @@ function* shipping() {
 }
 
 export function* shippingSaga() {
-  yield takeLates([
+  yield takeLatest([
     SET_CART_ITEMS,
     INCREASE_ITEM_QUANTITY,
     DECREASE_ITEM_QUANTITY
