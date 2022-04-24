@@ -1,4 +1,6 @@
 import { call } from "@redux-saga/core/effects";
+import fetch from "isomorphic-fetch";
+
 import { setItemPrice, SET_CART_ITEMS, SET_CURRENT_USER } from "../actions";
 
 function* fetchItemPrice (id, currency) {

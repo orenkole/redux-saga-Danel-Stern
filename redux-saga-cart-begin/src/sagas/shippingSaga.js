@@ -1,4 +1,6 @@
 import { put, select, takeLatest } from "@redux-saga/core/effects";
+import fetch from "isomorphic-fetch";
+
 import {
   DECREASE_ITEM_QUANTITY,
   INCREASE_ITEM_QUANTITY,
