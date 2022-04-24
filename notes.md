@@ -441,3 +441,64 @@ not falling when parent process throws an error (fork stops);
 
 - compbines nubmerous _take_ statements into one
 - code execution resumes when all actions have been dispatched (in any order);
+
+## 41. Channels
+
+- Action channels
+- Generic channels
+- Event channels
+
+## 42. What are channels
+
+**Action channels**
+Buffer
+
+**Event channel**
+Consume outside sources
+
+**Channel**
+Communicate between between two sagas
+
+## 43. Action channels
+
+Recoreds all events with specified type
+
+calling _take_ accesses and removes oldest record
+
+Used to handle actions that would otherwise be lost
+
+Demo:
+Create an action channel and a saga that consumes events at a set pace
+
+Dispatch trigger event rapidly
+
+Note how saga is triggered the correct amount of times
+
+```javascript
+function* updateSaga() {
+  let chan = yield actionChannel("UPDATE");
+  while (true) {
+    yield take(chan);
+    console.info("Update logged);
+    yield delay(1000);
+  }
+}
+```
+
+every dispatch is processed:
+<img src="./noted_img/43_1.png">
+
+Without saga dispatch processed once:
+
+```javascript
+function* updateSaga() {
+  let chan = yield actionChannel("UPDATE");
+  while (true) {
+    yield take(chan);
+    console.info("Update logged);
+    yield delay(1000);
+  }
+}
+```
+
+<img src="./noted_img/43_2.png">
