@@ -409,3 +409,35 @@ export function* itemQuantitySaga() {
   ];
 }
 ```
+
+## 38. Spawn
+
+```javascript
+let process = function* () {
+  let timesLooped = 0;
+  while (true) {
+    console.info(`Looped ${timesLooped++} times`);
+    yield delay(500);
+  }
+};
+
+let saga = function* () {
+  yield spawn(process);
+  yield delay(1000);
+};
+
+saga = function* () {
+  yield spawn(process);
+  yield delay(1000);
+  throw new Error();
+};
+```
+
+<img src="./notes_img/38_1.png">
+
+not falling when parent process throws an error (fork stops);
+
+## 39. All
+
+- compbines nubmerous _take_ statements into one
+- code execution resumes when all actions have been dispatched (in any order);
