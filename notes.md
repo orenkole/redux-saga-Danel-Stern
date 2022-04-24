@@ -571,3 +571,5 @@ export function* customerServicesAvailabilitySaga() {
   }
 }
 ```
+
+## 46. Shipping saga
